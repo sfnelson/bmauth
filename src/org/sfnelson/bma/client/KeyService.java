@@ -9,8 +9,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("keyServer")
 public interface KeyService extends RemoteService {
 	UserData storeSecret(String serial, String token, long timeOffset);
-	String retrieveKey();
+	Key retrieveKey();
 	UserData generateUserData();
 	UserData retrieveUserData();
+	UserData deleteUserData();
 	UserData sync();
 }

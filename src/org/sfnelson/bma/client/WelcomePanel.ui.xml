@@ -1,0 +1,43 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		.panel {
+			position: relative;
+			width: 100%;
+			text-align: center;
+			top: 50%;
+			margin-top: -12em;
+			background-color: #6c3;
+			color: white;
+		}
+		h1 {
+			font-size: 90pt;
+			font-weight: normal;
+			padding: 0;
+			margin: 0;
+			margin-bottom: -0.5ex;
+		}
+		.options {
+			padding: 0.5ex 0;
+			font-size: 42pt;
+		}
+		.options a {
+			color: white;
+			cursor: pointer;
+			display: inline-block;
+			width: 7em;
+			text-align: center;
+		}
+		.options a:hover {
+			color: #c3a;
+		}
+	</ui:style>
+	<g:HTMLPanel styleName="{style.panel}">
+		<h1>welcome</h1>
+		<div class="{style.options}">
+			<g:Anchor ui:field="existing"></g:Anchor> &nbsp;
+			<g:Anchor ui:field="generate"></g:Anchor>
+		</div>
+	</g:HTMLPanel>
+</ui:UiBinder> 

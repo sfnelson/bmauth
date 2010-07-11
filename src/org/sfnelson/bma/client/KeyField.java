@@ -1,79 +1,165 @@
 package org.sfnelson.bma.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
-public class KeyField extends Composite implements AsyncCallback<String> {
+public class KeyField extends Composite implements AsyncCallback<Key> {
 
-	private static KeyFieldUiBinder uiBinder = GWT
-			.create(KeyFieldUiBinder.class);
+    private static KeyFieldUiBinder uiBinder = GWT
+    .create(KeyFieldUiBinder.class);
 
-	interface KeyFieldUiBinder extends UiBinder<Widget, KeyField> {
-	}
+    interface KeyFieldUiBinder extends UiBinder<Widget, KeyField> {
+    }
 
-	private KeyServiceAsync server;
+    private static final int TICK = 100;
+    private static final String LOGOUT_TEXT = "log out";
+    private static final String DELETE_TEXT = "delete";
+    private static final String DELETING_TEXT = "deleting...";
 
-	@UiField TextBox key;
+    private final KeyServiceAsync server;
+    private final UserData data;
+    private final Bma parent;
+    private final Timer refreshTimer;
+    private final Timer counterTimer;
 
+    private Key lastKey;
 
-	public KeyField(KeyServiceAsync keyServer) {
-		initWidget(uiBinder.createAndBindUi(this));
+    @UiField Label serial;
+    @UiField TextBox key;
+    @UiField Anchor logout;
+    @UiField Anchor delete;
+    @UiField FlowPanel time;
 
-		this.server = keyServer;
+    public KeyField(Bma parent, UserData data, KeyServiceAsync keyServer) {
+        initWidget(uiBinder.createAndBindUi(this));
 
-		refresh();
+        this.parent = parent;
+        this.server = keyServer;
+        this.data = data;
 
-		Timer t = new Timer() {
-			@Override
-			public void run() {
-				refresh();
-			}
-		};
-		t.scheduleRepeating(5000);
-	}
+        serial.setText(data.serial);
+        logout.setText(LOGOUT_TEXT);
+        delete.setText(DELETE_TEXT);
 
-	private void refresh() {
-		server.retrieveKey(this);
-	}
+        refreshTimer = new Timer() {
+            @Override
+            public void run() {
+                refresh();
+            }
+        };
 
-	public void onFailure(Throwable caught) {
-		ErrorConsole.addMessage("Error calculating authenticator key", caught);
-	}
+        counterTimer = new Timer() {
+            @Override
+            public void run() {
+                countdown();
+            }
+        };
+    }
 
-	public void onSuccess(String result) {
-		key.setText(result);
+    @Override
+    public void onLoad() {
+        super.onLoad();
 
-		if (hasFocus) {
-			key.selectAll();
-		}
-	}
+        refreshTimer.schedule(1);
+        counterTimer.scheduleRepeating(TICK);
 
-	private boolean hasFocus = false;
+        key.setFocus(true);
+    }
 
-	@UiHandler("key")
-	public void focused(FocusEvent ev) {
-		hasFocus = true;
-		key.selectAll();
-	}
+    @Override
+    public void onUnload() {
+        counterTimer.cancel();
+        refreshTimer.cancel();
 
-	@UiHandler("key")
-	public void blurred(BlurEvent ev) {
-		hasFocus = false;
-	}
+        super.onUnload();
+    }
 
-	@Override
-	public void onLoad() {
-		super.onLoad();
+    private void refresh() {
+        server.retrieveKey(this);
+    }
 
-		key.setFocus(true);
-	}
+    private void countdown() {
+        if (lastKey != null) {
+            double remaining = lastKey.valid;
+            time.getElement().getStyle().setWidth(remaining / 5000, Unit.EM);
+            lastKey.valid -= TICK;
+        }
+    }
+
+    public void onFailure(Throwable caught) {
+        ErrorConsole.addMessage("Error calculating authenticator key", caught);
+
+        refreshTimer.schedule(30000);
+    }
+
+    public void onSuccess(Key result) {
+        this.lastKey = result;
+
+        if (!this.isAttached()) {
+            return;
+        }
+
+        key.setText(result.value);
+
+        if (hasFocus) {
+            key.selectAll();
+        }
+
+        refreshTimer.schedule(result.valid);
+    }
+
+    private boolean hasFocus = false;
+
+    @UiHandler("key")
+    public void onFocus(FocusEvent ev) {
+        hasFocus = true;
+    }
+
+    @UiHandler("key")
+    public void onBlur(BlurEvent ev) {
+        hasFocus = false;
+    }
+
+    @UiHandler("key")
+    public void onClick(ClickEvent ev) {
+        key.selectAll();
+    }
+
+    @UiHandler("logout")
+    public void logout(ClickEvent ev) {
+        String loc = data.logout + Window.Location.getQueryString();
+        Window.Location.assign(loc);
+    }
+
+    @UiHandler("delete")
+    public void delete(ClickEvent ev) {
+        server.deleteUserData(new AsyncCallback<UserData>() {
+
+            public void onFailure(Throwable caught) {
+                ErrorConsole.addMessage("Error deleting user data", caught);
+                delete.setText(DELETE_TEXT);
+            }
+
+            public void onSuccess(UserData result) {
+                KeyField.this.removeFromParent();
+                parent.showWelcome();
+            }
+        });
+        delete.setText(DELETING_TEXT);
+    }
 }

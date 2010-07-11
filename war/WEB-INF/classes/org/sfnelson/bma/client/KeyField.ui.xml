@@ -3,29 +3,83 @@
 	xmlns:g="urn:import:com.google.gwt.user.client.ui">
 	<ui:style>
 		.panel {
-			position: absolute;
+			position: relative;
+			width: 100%;
 			text-align: center;
 			top: 50%;
-			left: 0;
-			width: 100%;
+			margin-top: -6em;
+			background-color: #6c3;
+			color: white;
+			padding: 1em 0;
 		}
-		.wrapper {
-			display: inline-block;
-			background-color: yellow;
-			margin-top: -10em;
-			padding: 6em 4em;
-			border-radius: 2em;
-			border: solid 5px green;
+		.serial {
+			font-family: Courier, monospace;
+			font-size: 18pt;
+			border-radius: 0.5ex;
+			width: 12em;
+			text-align: center;
+			margin: 0;
+			margin-top: 0.5ex;
+			padding: 0;
+			border: none;
 		}
 		.key {
-			font-size: 3em;
-			width: 8em;
+			font-family: Courier, monospace;
+			font-size: 32pt;
+			border-radius: 0.5ex;
+			width: 6em;
 			text-align: center;
-			border: solid 2px blue;
-			padding: 0.5em 0;
+			margin: 0;
+			margin-top: 0.5ex;
+			padding: 0;
+			border: none;
+		}
+		.menu {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			height: 2ex;
+			margin-bottom: -2ex;
+			font-size: small;
+		}
+		.menu a {
+			color: #aaa;
+			display: inline-block;
+			margin: 0;
+			padding: 0 0.5em;
+			cursor: pointer;
+		}
+		.timer, .timer-bar {
+			font-size: 32pt;
+			width: 6em;
+			height: 0.5ex;
+		}
+		.timer {
+			margin: 0 auto;
+			margin-top: 0.5ex;
+			background-color: #aaf;
+			position: relative;
+			overflow: hidden;
+			border-radius: 0.5ex;
+		}
+		.timer-bar {
+			position: absolute;
+			background-color: white;
+			right: 0;
+			width: 6em;
+			border-top-right-radius: 0.5ex;
+			border-bottom-right-radius: 0.5ex;
 		}
 	</ui:style>
 	<g:HTMLPanel styleName="{style.panel}">
-		<div class="{style.wrapper}"><g:TextBox styleName="{style.key}" ui:field="key" /></div>
+		<div><g:InlineLabel styleName="{style.serial}" ui:field="serial" /></div>
+		<div><g:TextBox styleName="{style.key}" ui:field="key" /></div>
+		<g:FlowPanel styleName="{style.timer}">
+			<g:FlowPanel styleName="{style.timer-bar}" ui:field="time" />
+		</g:FlowPanel>
+		<div class="{style.menu}">
+			<g:Anchor ui:field="logout"></g:Anchor>
+			<g:Anchor ui:field="delete"></g:Anchor>
+		</div>
 	</g:HTMLPanel>
 </ui:UiBinder> 

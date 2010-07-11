@@ -7,15 +7,15 @@ public class UserData implements Serializable {
 
 	public String user;
 	public String serial;
-	public String token;
+	public String logout;
 	public Long timeOffset;
 
 	public UserData() {}
 
-	public UserData(String user, String serial, String token, Long timeOffset) {
+	public UserData(String user, String logout, String serial, Long timeOffset) {
 		this.user = user;
+		this.logout = logout;
 		this.serial = serial;
-		this.token = token;
 		this.timeOffset = timeOffset;
 	}
 }
